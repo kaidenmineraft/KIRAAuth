@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Authenticator</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      background: #111;
+      color: #0f0;
+      margin-top: 50px;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+    }
+    #code {
+      font-size: 48px;
+      margin-top: 30px;
+      letter-spacing: 5px;
+    }
+    #timer {
+      font-size: 14px;
+      color: #aaa;
+    }
+  </style>
+</head>
+<body>
+  <h1>Simple Authenticator</h1>
+  <input id="secret" placeholder="Enter secret..." />
+  <button onclick="start()">Generate</button>
+  <div id="code">------</div>
+  <div id="timer">Next code in 30s</div>
+
+  <script>
+    let interval;
+
+    function generateCode(secret) {
+      // Simple code from secret + time (not real TOTP)
+      const time = Math.floor(Date.now() / 30000);
+      const raw = `${secret}-${time}`;
+      let hash = 0;
+      for (let i = 0; i < raw.length; i++) {
+        hash = (hash << 5) - hash + raw.charCodeAt(i);
+        hash |= 0;
+      }
+      return Math.abs(hash).toString().padStart(6, '0').slice(0, 6);
+    }
+
+    function start() {
+      const secret = document.getElementById('secret').value;
+      if (!secret) return alert("Enter a secret!");
+
+      clearInterval(interval);
+
+      function update() {
+        const code = generateCode(secret);
+        document.getElementById('code').textContent = code;
+
+        const seconds = 30 - (Math.floor(Date.now() / 1000) % 30);
+        document.getElementById('timer').textContent = `Next code in ${seconds}s`;
+      }
+
+      update();
+      interval = setInterval(update, 1000);
+    }
+  </script>
+</body>
+</html>
